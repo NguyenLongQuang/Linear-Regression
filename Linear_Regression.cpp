@@ -1,11 +1,10 @@
 #include<iostream>
 #include<math.h>
-#include<vector>
 #include<fstream>
 #define learningrate 0.001
 using namespace std;
 //m stands for number of features
-//n stands for number of trainning example
+//n stands for number of training example
 
 struct trainset{
 	double x[100]={1};
@@ -53,36 +52,42 @@ void Gradient_descent_runner(double *t, trainset TS[], int n, int m){
 }
 
 void Normalize(trainset *p, double *mx, double *my, int n, int m){
-	double max_x=(*p).x[0];
+	//Normalize Y
 	double max_y=(*p).y;
-	
 	for(int i=0;i<n;i++){
-		if(max_y<(*(p+i)).y) max_y=(*(p+i)).y;
-	}
-	
-	for(int i=0;i<n;i++){
-		for(int j=1;j<m+1;j++){
-			if(max_x<(*(p+i)).x[j]) max_x=(*(p+i)).x[j];
-		}
-	}
-	
-	for(int i=0;i<n;i++){
-		(*(p+i)).y/=max_y;
+		if(max_y<(*(p+i)).y) max_y=(*(p+i)).y;			//find max Y
 	}
 	for(int i=0;i<n;i++){
-		for(int j=1;j<m+1;j++){
-			(*(p+i)).x[j]/=max_x;
-		}
-	}
-		
-	*mx=max_x;
+		(*(p+i)).y/=max_y;									
+	} 
 	*my=max_y;
+	
+	//Normalize X
+	double max_x[100];
+	for(int j=0;j<m;j++){
+		max_x[j]=(*p).x[j+1];
+	}
+	for(int j=0;j<m;j++){
+		for(int i=0;i<n;i++){
+				if(max_x[j]<(*(p+i)).x[j+1]) max_x[j]=(*(p+i)).x[j+1];
+		}
+	}
+	for(int j=0;j<m;j++){
+		for(int i=0;i<n;i++){
+				(*(p+i)).x[j+1]/=max_x[j];
+		}
+	}
+	for(int j=0;j<m;j++){
+		*(mx+j)=max_x[j];
+	}
 }
+
 	
 
 int main(){
-	double theta[100]={}, X=0, Y=0, y;
-	double *mx=&X, *my=&Y, *t;
+	double theta[100]={}, X[100], Y, y;
+	double *mx, *my=&Y, *t;
+	mx=X;
 	t=theta;
 	int n,m;
 	trainset TS[100];
@@ -90,13 +95,13 @@ int main(){
 	trainset *p;
 	p=TS;
 	
-	cout<<"Input number of trainning example: ";
+	cout<<"Input number of training examples: ";
 	cin>>n;
 	
 	cout<<"Input number of features: ";
 	cin>>m;
 	
-	cout<<"Input trainning set:\n";
+	cout<<"Input training set:\n";
 	for(int i=0;i<n;i++){
 		for(int j=1;j<m+1;j++){
 			cin>>TS[i].x[j];
@@ -114,8 +119,9 @@ int main(){
 	Gradient_descent_runner(t,TS,n,m);
 	
 	for(int i=1;i<m+1;i++){
-		ans.x[i]/=X;
-	}
+		ans.x[i]/=X[i-1];
+	} //Normalize "input" X
+
 
 	y=Y*Hypothesis_H(ans,theta,m);
 	
